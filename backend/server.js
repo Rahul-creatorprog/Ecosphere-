@@ -1,36 +1,32 @@
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
-
-dotenv.config();
+import 'dotenv/config';
+import router from './routes.js';
+import { initDb } from './db.js';
 
 const app = express();
+const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
+// Mount routes
+app.use('/api', router);
 
+// Root health check
 app.get('/', (req, res) => {
-    res.status(200).json({
-        success: true,
-        message: 'Welcome to the Ecosphere API!' });
+  res.json({ status: 'ok', message: 'EcoSphere ESG MySQL API Server is running' });
 });
 
-app.get("/api/health", (req, res) => {
-    res.status(200).json({
-        success: true,
-        message: 'Ecosphere API is running successfully!' });
-});
-
-app.use((req, res) => {
-    res.status(404).json({
-        success: false,
-        message: 'Route not found' });
-});
-
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-}); 
+// Initialize DB and start server
+initDb()
+  .then(() => {
+    console.log('MySQL Database connected and initialized.');
+    app.listen(PORT, () => {
+      console.log(`Server is running on http://localhost:${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error('Failed to initialize database:', err);
+    process.exit(1);
+  });
