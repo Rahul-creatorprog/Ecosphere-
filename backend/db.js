@@ -30,7 +30,7 @@ export async function getOne(sql,params){
     return results[0] || null;
 }
 
-export async function getAll(sql,params){
+export async function initDb() {
     const db = await getDb();
 
     //create tables in correct order
